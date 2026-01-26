@@ -9,10 +9,13 @@ public class MMORPGServer {
 
     public static void main(String[] args) {
         try(ServerSocket serverSocket = new ServerSocket(PORT)) {
+            String localIP = InetAddress.getLocalHost().getHostAddress();
+            System.out.println("MMORPG Server is starting...");
+            System.out.println("Local IP Address: " + localIP);
             System.out.println("MMORPG Server is running on port " + PORT);
 
             while(true) {
-                Socket clientSocket serverSocket.accept();
+                Socket clientSocket = serverSocket.accept();
                 PlayerHandler playerHandler = new PlayerHandler(clientSocket);
                 new Thread(playerHandler).start();
             }
@@ -22,14 +25,14 @@ public class MMORPGServer {
     }
 
     public static synchronized void broadcast(String message, PlayerHandler sender) {
-        if (PlayerHandler player: players.values()) {
+        for (PlayerHandler player: players.values()) {
             if (player != sender) {
                 player.sendMessage(message);
             }
         }
     }
 
-    public static synchronized void updatePlaterPosition(String playerName, String positionData) {
+    public static synchronized void updatePlayerPosition(String playerName, String positionData) {
         String message = "UPDATE: " + playerName + ":" + positionData;
         broadcast(message, players.get(playerName));
     }
@@ -46,6 +49,46 @@ public class MMORPGServer {
 class PlayerHandler implements Runnable {
     private Socket socket;
     private PrintWriter out;
-    private BufferReader in;
-    private String playerName
+    private BufferedReader in;
+    private String playerName;
+
+    public PlayerHandler(Socket socket) {
+        this.socket = socket;
+    }
+
+    @Override
+    public void run() {
+        try {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+
+            out.println("Enter your player name: ");
+            playerName = in.readLine();
+            MMORPGServer.addPlayer(playerName, this);
+            System.out.println(playerName + "  has joined the game.");
+
+            String message;
+            while ((message = in.readLine()) != null) {
+                if (message.startsWith("MOVE:")) {
+                    String positionData = message.substring(5); //Extract Position Data
+                    System.out.println(playerName + " moved to " + positionData);
+                    MMORPGServer.updatePlayerPosition(playerName, positionData);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try{
+                MMORPGServer.removePlayer(playerName);
+                socket.close();
+                System.out.println(playerName + " has left the game.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void sendMessage(String message) {
+        out.println(message);
+    }
 }
