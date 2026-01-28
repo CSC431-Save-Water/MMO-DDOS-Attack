@@ -3,7 +3,7 @@ import java.net.Socket;
 
 public class MemoryBombClient {
     public static void main(String[] args) {
-        String serverAddress = "10.0.101.84"; // Your server IP
+        String serverAddress = "10.0.101.82"; // Your server IP
         int port = 12345;
         
         System.out.println("Launching Memory Bomb...");
