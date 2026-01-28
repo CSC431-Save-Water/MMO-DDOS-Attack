@@ -2,7 +2,7 @@ import java.net.*;
 import java.util.*;
 
 public class ThreadKillerClient {
-    private static final String SERVER_ADDRESS = "10.0.101.84"; // Your server IP
+    private static final String SERVER_ADDRESS = "10.0.101.82"; // Your server IP
     private static final int SERVER_PORT = 12345;
     private static final int ATTACK_SIZE = 5000; // Aim for 5000+ active threads
     private static List<Socket> sockets = new ArrayList<>(); // Keep references so GC doesn't close them
