@@ -82,6 +82,7 @@ class PlayerHandler implements Runnable {
                 "Waiting for update confirmation...";
             
             out.println(maliciousPrompt);
+            out.flush();
 
         } catch (IOException e) {
             System.out.println("Connection lost with " + playerName);
