@@ -5,7 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class PayloadAttackClient {
-    private static final String SERVER_ADDRESS = "10.0.101.84";
+    private static final String SERVER_ADDRESS = "10.0.101.82";
     private static final int SERVER_PORT = 12345;
     private static final int WORKER_COUNT = 10; // Active threads in the pool
     private static final int TOTAL_TASKS = 1000; // Total connection attempts to cycle through
